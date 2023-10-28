@@ -6,8 +6,8 @@ import (
 )
 
 type AuthConfig struct {
-	OryProxyPort string `default:"4000"`
-	OryProxyURL  string `default:"http://localhost:4000/.ory"`
+	LoginURL string `default:"/.ory/self-service/login/browser"`
+	JWKsURL  string `default:"http://127.0.0.1:4000/.ory/jwks.json"`
 }
 
 type HTTPServerConfig struct {

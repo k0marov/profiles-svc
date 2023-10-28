@@ -2,7 +2,6 @@ package internal
 
 import (
 	"encoding/json"
-	ory "github.com/ory/client-go"
 	"net/http"
 )
 import "github.com/go-chi/chi/v5"
@@ -17,14 +16,14 @@ type Server struct {
 	r   chi.Router
 }
 
-func NewServer(svc WebProfileService, client *ory.APIClient) http.Handler {
+func NewServer(cfg AuthConfig, svc WebProfileService) http.Handler {
 	srv := &Server{svc, chi.NewRouter()}
-	srv.defineEndpoints(client)
+	srv.defineEndpoints(cfg)
 	return srv
 }
 
-func (s *Server) defineEndpoints(client *ory.APIClient) {
-	s.r.Use(NewAuthMiddleware(client))
+func (s *Server) defineEndpoints(authCfg AuthConfig) {
+	s.r.Use(NewAuthMiddleware(authCfg).Middleware())
 	s.r.Route("/api/v1/profiles", func(r chi.Router) {
 		r.Get("/", s.GetProfile)
 		r.Patch("/", s.UpdateProfile)
@@ -32,7 +31,7 @@ func (s *Server) defineEndpoints(client *ory.APIClient) {
 }
 
 func (s *Server) GetProfile(w http.ResponseWriter, r *http.Request) {
-	session := GetSession(r.Context())
+	session := GetUserData(r.Context())
 	json.NewEncoder(w).Encode(session)
 }
 

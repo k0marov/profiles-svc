@@ -2,55 +2,78 @@ package internal
 
 import (
 	"context"
-	ory "github.com/ory/client-go"
+	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jws"
+	"github.com/lestrrat-go/jwx/v2/jwt"
+	"time"
+
+	"log"
 	"net/http"
+	"strings"
 )
 
-// save the cookies for any upstream calls to the Ory apis
-func withCookies(ctx context.Context, v string) context.Context {
-	return context.WithValue(ctx, "req.cookies", v)
+type UserClaims struct {
+	ID     string
+	Traits map[string]any
 }
 
-func getCookies(ctx context.Context) string {
-	return ctx.Value("req.cookies").(string)
-}
-
-// save the session to display it on the dashboard
-func withSession(ctx context.Context, v *ory.Session) context.Context {
+func withUserData(ctx context.Context, v *UserClaims) context.Context {
 	return context.WithValue(ctx, "req.session", v)
 }
 
-func GetSession(ctx context.Context) *ory.Session {
-	return ctx.Value("req.session").(*ory.Session)
+func GetUserData(ctx context.Context) *UserClaims {
+	return ctx.Value("req.session").(*UserClaims)
 }
 
-func NewAuthMiddleware(client *ory.APIClient) func(http.Handler) http.Handler {
+type AuthMiddleware struct {
+	cfg    AuthConfig
+	jwkSet jwk.Set
+}
+
+func NewAuthMiddleware(cfg AuthConfig) *AuthMiddleware {
+	return &AuthMiddleware{
+		cfg,
+		getJWK(cfg.JWKsURL),
+	}
+}
+
+func (mw *AuthMiddleware) Middleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// set the cookies on the ory client
-			var cookies string
-
-			// this example passes all request.Cookies
-			// to `ToSession` function
-			//
-			// However, you can pass only the value of
-			// ory_session_projectid cookie to the endpoint
-			cookies = r.Header.Get("Cookie")
-
-			// check if we have a session
-			session, _, err := client.FrontendApi.ToSession(r.Context()).Cookie(cookies).Execute()
-			if (err != nil && session == nil) || (err == nil && !*session.Active) {
-				// this will redirect the user to the managed Ory Login UI
-				http.Redirect(w, r, "/.ory/self-service/login/browser", http.StatusSeeOther)
+			token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+			claims, ok := mw.validateJWT(token)
+			if !ok {
+				// TODO: replace with just 401
+				http.Redirect(w, r, mw.cfg.LoginURL, http.StatusSeeOther)
 				return
 			}
 
-			ctx := withCookies(r.Context(), cookies)
-			ctx = withSession(ctx, session)
-
-			// continue to the requested page (in our case the Dashboard)
+			ctx := withUserData(r.Context(), claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
-			return
 		})
 	}
+}
+
+func getJWK(jwkURL string) jwk.Set {
+	c := jwk.NewCache(context.Background())
+	c.Register(jwkURL, jwk.WithMinRefreshInterval(15*time.Minute))
+	_, err := c.Refresh(context.Background(), jwkURL)
+	if err != nil {
+		log.Panicf("unable to get jwks for authentication: %v", err)
+	}
+	return jwk.NewCachedSet(c, jwkURL)
+}
+
+func (mw *AuthMiddleware) validateJWT(token string) (*UserClaims, bool) {
+	validated, err := jwt.Parse([]byte(token), jwt.WithKeySet(mw.jwkSet, jws.WithRequireKid(false)), jwt.WithValidate(true))
+	if err != nil {
+		return nil, false
+	}
+	validated.PrivateClaims()
+	sub := validated.Subject()
+	traits := validated.PrivateClaims()["session"].(map[string]any)["identity"].(map[string]any)["traits"]
+	return &UserClaims{
+		ID:     sub,
+		Traits: traits.(map[string]any),
+	}, true
 }
