@@ -12,12 +12,12 @@ type ClientError struct {
 	HTTPCode       int    `json:"-"`
 }
 
-func (ce ClientError) Error() string {
+func (ce *ClientError) Error() string {
 	return fmt.Sprintf("an error which will be displayed to the client: %d %v", ce.HTTPCode, ce.DisplayMessage)
 }
 
 func WriteErrorResponse(w http.ResponseWriter, e error) {
-	if ce, ok := e.(ClientError); ok {
+	if ce, ok := e.(*ClientError); ok {
 		w.WriteHeader(ce.HTTPCode)
 		json.NewEncoder(w).Encode(ce)
 	}

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-var ErrProfileNotFound = ClientError{
+var ErrProfileNotFound = &ClientError{
 	DisplayMessage: "profile not found",
 	HTTPCode:       http.StatusNotFound,
 }
