@@ -2,11 +2,10 @@ package internal
 
 import (
 	"context"
-	"github.com/lestrrat-go/jwx/v2/jwk"
-	"github.com/lestrrat-go/jwx/v2/jws"
-	"github.com/lestrrat-go/jwx/v2/jwt"
-	"time"
-
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -26,14 +25,12 @@ func GetCaller(ctx context.Context) *UserClaims {
 }
 
 type AuthMiddleware struct {
-	cfg    AuthConfig
-	jwkSet jwk.Set
+	cfg AuthConfig
 }
 
 func NewAuthMiddleware(cfg AuthConfig) *AuthMiddleware {
 	return &AuthMiddleware{
 		cfg,
-		getJWK(cfg.JWKsURL),
 	}
 }
 
@@ -41,10 +38,10 @@ func (mw *AuthMiddleware) Middleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-			claims, ok := mw.validateJWT(token)
-			if !ok {
+			claims, err := mw.parseJWT(token)
+			if err != nil {
 				// TODO: replace with just 401
-				log.Printf("rejected token %s", token)
+				log.Printf("rejected token %s: %v", token, err)
 				http.Redirect(w, r, mw.cfg.LoginURL, http.StatusSeeOther)
 				return
 			}
@@ -55,26 +52,36 @@ func (mw *AuthMiddleware) Middleware() func(http.Handler) http.Handler {
 	}
 }
 
-func getJWK(jwkURL string) jwk.Set {
-	c := jwk.NewCache(context.Background())
-	c.Register(jwkURL, jwk.WithMinRefreshInterval(15*time.Minute))
-	_, err := c.Refresh(context.Background(), jwkURL)
-	if err != nil {
-		log.Panicf("unable to get jwks for authentication: %v", err)
-	}
-	return jwk.NewCachedSet(c, jwkURL)
+type jwtClaims struct {
+	UserID  string `json:"sub"`
+	Session struct {
+		Identity struct {
+			Traits map[string]any `json:"traits"`
+		} `json:"identity"`
+	} `json:"session"`
 }
 
-func (mw *AuthMiddleware) validateJWT(token string) (*UserClaims, bool) {
-	validated, err := jwt.Parse([]byte(token), jwt.WithKeySet(mw.jwkSet, jws.WithRequireKid(false)), jwt.WithValidate(true))
-	if err != nil {
-		return nil, false
+// parseJWT deliberately DOES NOT verify the jwt token.
+// this microservice is meant to be used behind an auth gateway (like ory proxy)
+// so all jwts are assumed to be verified already.
+// JWT is decoded from base64 and parsed here manually to highlight that absolutely no signature verification is done.
+func (mw *AuthMiddleware) parseJWT(token string) (*UserClaims, error) {
+	parts := strings.SplitN(token, ".", 3)
+	if len(parts) != 3 {
+		return nil, errors.New("unable to split jwt into three parts")
 	}
-	validated.PrivateClaims()
-	sub := validated.Subject()
-	traits := validated.PrivateClaims()["session"].(map[string]any)["identity"].(map[string]any)["traits"]
+	byteClaims, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode payload part from base64: %v", err)
+	}
+
+	var claims jwtClaims
+	if err := json.Unmarshal(byteClaims, &claims); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal claims: %v", err)
+	}
+
 	return &UserClaims{
-		ID:     sub,
-		Traits: traits.(map[string]any),
-	}, true
+		ID:     claims.UserID,
+		Traits: claims.Session.Identity.Traits,
+	}, nil
 }

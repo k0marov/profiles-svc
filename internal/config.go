@@ -7,7 +7,6 @@ import (
 
 type AuthConfig struct {
 	LoginURL string `default:"/.ory/self-service/login/browser"`
-	JWKsURL  string `default:"http://127.0.0.1:4000/.ory/jwks.json"`
 }
 
 type HTTPServerConfig struct {
