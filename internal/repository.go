@@ -7,17 +7,17 @@ func NewMongoProfileRepository() *MongoProfileRepository {
 	return &MongoProfileRepository{}
 }
 
-func (m MongoProfileRepository) Get(ID string) (Profile, error) {
+func (m MongoProfileRepository) Get(ID string) (*Profile, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m MongoProfileRepository) Create(profile Profile) {
+func (m MongoProfileRepository) Create(profile *Profile) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (m MongoProfileRepository) Update(profile Profile) (Profile, error) {
+func (m MongoProfileRepository) Update(profile *Profile) (*Profile, error) {
 	//TODO implement me
 	panic("implement me")
 }

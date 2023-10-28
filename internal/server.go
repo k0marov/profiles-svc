@@ -1,14 +1,15 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 )
 import "github.com/go-chi/chi/v5"
 
 type WebProfileService interface {
-	Get(ID string) (Profile, error)
-	Update(ID string, profile Profile) (Profile, error)
+	GetOrCreate(ctx context.Context, ID string) (*Profile, error)
+	Update(ctx context.Context, profile *Profile) (*Profile, error)
 }
 
 type Server struct {
@@ -25,13 +26,13 @@ func NewServer(cfg AuthConfig, svc WebProfileService) http.Handler {
 func (s *Server) defineEndpoints(authCfg AuthConfig) {
 	s.r.Use(NewAuthMiddleware(authCfg).Middleware())
 	s.r.Route("/api/v1/profiles", func(r chi.Router) {
-		r.Get("/", s.GetProfile)
-		r.Patch("/", s.UpdateProfile)
+		r.Get("/me", s.GetMyProfile)
+		r.Patch("/me", s.UpdateProfile)
 	})
 }
 
-func (s *Server) GetProfile(w http.ResponseWriter, r *http.Request) {
-	session := GetUserData(r.Context())
+func (s *Server) GetMyProfile(w http.ResponseWriter, r *http.Request) {
+	session := GetCaller(r.Context())
 	json.NewEncoder(w).Encode(session)
 }
 

@@ -21,7 +21,7 @@ func withUserData(ctx context.Context, v *UserClaims) context.Context {
 	return context.WithValue(ctx, "req.session", v)
 }
 
-func GetUserData(ctx context.Context) *UserClaims {
+func GetCaller(ctx context.Context) *UserClaims {
 	return ctx.Value("req.session").(*UserClaims)
 }
 
