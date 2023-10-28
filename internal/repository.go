@@ -58,7 +58,7 @@ func (m *MongoProfileRepository) Update(ID string, upd *ProfileUpdatable) (*Prof
 	if err != nil {
 		return nil, fmt.Errorf("while getting profile profile: %v", err)
 	}
-	profile.ProfileUpdatable = *upd // TODO: change to proper patch
+	profile.ProfileUpdatable = updateProfile(profile.ProfileUpdatable, *upd)
 
 	result := m.col.FindOneAndReplace(context.TODO(), bson.D{{"_id", ID}}, profile)
 	if err := result.Err(); err != nil {
@@ -68,4 +68,14 @@ func (m *MongoProfileRepository) Update(ID string, upd *ProfileUpdatable) (*Prof
 		return nil, fmt.Errorf("while updating profile in db: %v", err)
 	}
 	return profile, nil
+}
+
+func updateProfile(current, upd ProfileUpdatable) ProfileUpdatable {
+	if upd.Name != nil {
+		current.Name = upd.Name
+	}
+	if upd.Age != nil {
+		current.Age = upd.Age
+	}
+	return current
 }
