@@ -1,6 +1,9 @@
 package internal
 
-import "net/http"
+import (
+	ory "github.com/ory/client-go"
+	"net/http"
+)
 import "github.com/go-chi/chi/v5"
 
 type WebProfileService interface {
@@ -13,13 +16,14 @@ type Server struct {
 	r   chi.Router
 }
 
-func NewServer(svc WebProfileService) http.Handler {
+func NewServer(svc WebProfileService, client *ory.APIClient) http.Handler {
 	srv := &Server{svc, chi.NewRouter()}
-	srv.defineEndpoints()
+	srv.defineEndpoints(client)
 	return srv
 }
 
-func (s *Server) defineEndpoints() {
+func (s *Server) defineEndpoints(client *ory.APIClient) {
+	s.r.Use(NewAuthMiddleware(client))
 	s.r.Route("/api/v1/profiles", func(r chi.Router) {
 		r.Get("/", s.GetProfile)
 		r.Patch("/", s.UpdateProfile)
