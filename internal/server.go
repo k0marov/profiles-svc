@@ -14,10 +14,26 @@ type Server struct {
 }
 
 func NewServer(svc WebProfileService) http.Handler {
-	r := chi.NewRouter()
-	return &Server{svc, r}
+	srv := &Server{svc, chi.NewRouter()}
+	srv.defineEndpoints()
+	return srv
 }
 
-func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (s *Server) defineEndpoints() {
+	s.r.Route("/api/v1/profiles", func(r chi.Router) {
+		r.Get("/", s.GetProfile)
+		r.Patch("/", s.UpdateProfile)
+	})
+}
+
+func (s *Server) GetProfile(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello World!"))
+}
+
+func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello World!"))
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.r.ServeHTTP(w, r)
 }
