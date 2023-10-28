@@ -6,6 +6,8 @@ import (
 )
 
 func InitializeAndStart() {
-	srv := NewServer()
+	repo := NewMongoProfileRepository()
+	svc := NewProfileService(repo)
+	srv := NewServer(svc)
 	log.Fatal(http.ListenAndServe(":8080", srv))
 }

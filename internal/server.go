@@ -1,12 +1,21 @@
 package internal
 
 import "net/http"
+import "github.com/go-chi/chi/v5"
 
-type Server struct {
+type WebProfileService interface {
+	Get(ID string) (Profile, error)
+	Update(ID string, profile Profile) (Profile, error)
 }
 
-func NewServer() http.Handler {
-	return &Server{}
+type Server struct {
+	svc WebProfileService
+	r   chi.Router
+}
+
+func NewServer(svc WebProfileService) http.Handler {
+	r := chi.NewRouter()
+	return &Server{svc, r}
 }
 
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
