@@ -7,7 +7,8 @@ type Profile struct {
 
 type ProfileStore interface {
 	Get(ID string) (Profile, error)
-	Update(ID string, profile Profile) (Profile, error)
+	Create(profile Profile)
+	Update(profile Profile) (Profile, error)
 }
 
 type ProfileService struct {
