@@ -4,15 +4,13 @@ FROM golang:1.21 AS builder
 
 WORKDIR /build
 
-# Download Go modules
-COPY go.mod go.sum ./
+COPY . .
+
 RUN go mod download
 
-COPY ./cmd ./
-COPY ./internal ./
 
 # Build
-RUN go build ./cmd/profiles -o /profiles
+RUN GOOS=linux GOARCH=amd64 go build -o /profiles ./cmd/profiles
 
 FROM alpine
 
@@ -23,4 +21,4 @@ COPY --from=builder /build/profiles /build/profiles
 EXPOSE 8001
 
 # Run
-CMD ["/build/profiles"]
+ENTRYPOINT /build/profiles

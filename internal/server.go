@@ -9,7 +9,7 @@ import "github.com/go-chi/chi/v5"
 
 type WebProfileService interface {
 	GetOrCreate(caller *UserClaims) (*Profile, error)
-	Update(ctx context.Context, profile *Profile) (*Profile, error)
+	Update(ctx context.Context, upd *ProfileUpdatable) (*Profile, error)
 }
 
 type Server struct {
@@ -41,13 +41,13 @@ func (s *Server) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	var profile Profile
-	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
+	var upd ProfileUpdatable
+	if err := json.NewDecoder(r.Body).Decode(&upd); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
-	updated, err := s.svc.GetOrCreate(GetCaller(r.Context()))
+	updated, err := s.svc.Update(r.Context(), &upd)
 	if err != nil {
 		WriteErrorResponse(w, err)
 		return

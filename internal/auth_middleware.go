@@ -44,6 +44,7 @@ func (mw *AuthMiddleware) Middleware() func(http.Handler) http.Handler {
 			claims, ok := mw.validateJWT(token)
 			if !ok {
 				// TODO: replace with just 401
+				log.Printf("rejected token %s", token)
 				http.Redirect(w, r, mw.cfg.LoginURL, http.StatusSeeOther)
 				return
 			}

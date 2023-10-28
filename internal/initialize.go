@@ -6,8 +6,9 @@ import (
 )
 
 func InitializeAndStart(cfg AppConfig) {
-	repo := NewMongoProfileRepository()
+	repo, closeRepo := NewMongoProfileRepository(cfg.Mongo)
+	defer closeRepo()
 	svc := NewProfileService(repo)
 	srv := NewServer(cfg.Auth, svc)
-	log.Fatal(http.ListenAndServe(cfg.HTTPServer.Host, srv))
+	log.Print(http.ListenAndServe(cfg.HTTPServer.Host, srv))
 }

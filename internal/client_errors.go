@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -21,4 +22,5 @@ func WriteErrorResponse(w http.ResponseWriter, e error) {
 		json.NewEncoder(w).Encode(ce)
 	}
 	w.WriteHeader(http.StatusInternalServerError)
+	log.Printf("ERROR: %v", e.Error())
 }

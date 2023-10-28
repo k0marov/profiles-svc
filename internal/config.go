@@ -11,12 +11,17 @@ type AuthConfig struct {
 }
 
 type HTTPServerConfig struct {
-	Host string `default:"localhost:3000"`
+	Host string `default:"127.0.0.1:8001"`
+}
+
+type MongoConfig struct {
+	URI string `default:"mongodb://127.0.0.1:27017"`
 }
 
 type AppConfig struct {
 	Auth       AuthConfig
 	HTTPServer HTTPServerConfig
+	Mongo      MongoConfig
 }
 
 func ReadConfigFromEnv() AppConfig {
