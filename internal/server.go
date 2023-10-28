@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	ory "github.com/ory/client-go"
 	"net/http"
 )
@@ -31,7 +32,8 @@ func (s *Server) defineEndpoints(client *ory.APIClient) {
 }
 
 func (s *Server) GetProfile(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World!"))
+	session := GetSession(r.Context())
+	json.NewEncoder(w).Encode(session)
 }
 
 func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
