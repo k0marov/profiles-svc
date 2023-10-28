@@ -4,9 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 )
 
-var ErrProfileNotFound = errors.New("profile not found")
+var ErrProfileNotFound = ClientError{
+	DisplayMessage: "profile not found",
+	HTTPCode:       http.StatusNotFound,
+}
 
 type ProfileRepo interface {
 	Get(ID string) (*Profile, error)
