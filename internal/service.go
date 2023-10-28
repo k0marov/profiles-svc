@@ -27,13 +27,13 @@ func NewProfileService(repo ProfileRepo) *ProfileService {
 	return &ProfileService{repo: repo}
 }
 
-func (p *ProfileService) GetOrCreate(ctx context.Context, ID string) (*Profile, error) {
-	profile, err := p.repo.Get(ID)
+func (p *ProfileService) GetOrCreate(caller *UserClaims) (*Profile, error) {
+	profile, err := p.repo.Get(caller.ID)
 	if errors.Is(err, ProfileNotFoundErr) {
-		return p.createFirst(GetCaller(ctx))
+		return p.createFirst(caller)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("while getting profile by id %q from repo: %v", ID, err)
+		return nil, fmt.Errorf("while getting profile by id %q from repo: %v", caller.ID, err)
 	}
 	return profile, nil
 }

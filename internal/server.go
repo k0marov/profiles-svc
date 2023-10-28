@@ -8,7 +8,7 @@ import (
 import "github.com/go-chi/chi/v5"
 
 type WebProfileService interface {
-	GetOrCreate(ctx context.Context, ID string) (*Profile, error)
+	GetOrCreate(caller *UserClaims) (*Profile, error)
 	Update(ctx context.Context, profile *Profile) (*Profile, error)
 }
 
@@ -32,12 +32,27 @@ func (s *Server) defineEndpoints(authCfg AuthConfig) {
 }
 
 func (s *Server) GetMyProfile(w http.ResponseWriter, r *http.Request) {
-	session := GetCaller(r.Context())
-	json.NewEncoder(w).Encode(session)
+	profile, err := s.svc.GetOrCreate(GetCaller(r.Context()))
+	if err != nil {
+		WriteErrorResponse(w, err)
+		return
+	}
+	json.NewEncoder(w).Encode(profile)
 }
 
 func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World!"))
+	var profile Profile
+	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	updated, err := s.svc.GetOrCreate(GetCaller(r.Context()))
+	if err != nil {
+		WriteErrorResponse(w, err)
+		return
+	}
+	json.NewEncoder(w).Encode(updated)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
