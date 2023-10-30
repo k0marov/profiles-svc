@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -9,7 +8,7 @@ import "github.com/go-chi/chi/v5"
 
 type WebProfileService interface {
 	GetOrCreate(caller *UserClaims) (*Profile, error)
-	Update(ctx context.Context, upd *ProfileUpdatable) (*Profile, error)
+	Update(caller *UserClaims, upd *ProfileUpdatable) (*Profile, error)
 }
 
 type Server struct {
@@ -47,7 +46,7 @@ func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	updated, err := s.svc.Update(r.Context(), &upd)
+	updated, err := s.svc.Update(GetCaller(r.Context()), &upd)
 	if err != nil {
 		WriteErrorResponse(w, err)
 		return

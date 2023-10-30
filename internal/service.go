@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -53,15 +52,14 @@ func (p *ProfileService) createFirst(user *UserClaims) (*Profile, error) {
 	return profile, nil
 }
 
-func (p *ProfileService) Update(ctx context.Context, upd *ProfileUpdatable) (*Profile, error) {
-	caller := GetCaller(ctx)
+func (p *ProfileService) Update(caller *UserClaims, upd *ProfileUpdatable) (*Profile, error) {
 	profile, err := p.repo.Get(caller.ID)
 	if err != nil {
 		return nil, fmt.Errorf("while getting profile: %v", err)
 	}
 	profile.ProfileUpdatable = updateProfile(profile.ProfileUpdatable, *upd)
 
-	err = p.repo.Replace(GetCaller(ctx).ID, profile)
+	err = p.repo.Replace(caller.ID, profile)
 	if err != nil {
 		return nil, fmt.Errorf("while replacing user profile in repo: %v", err)
 	}
