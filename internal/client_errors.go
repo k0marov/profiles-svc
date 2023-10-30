@@ -24,6 +24,7 @@ func WriteErrorResponse(w http.ResponseWriter, e error) {
 	if ce, ok := e.(*ClientError); ok {
 		w.WriteHeader(ce.HTTPCode)
 		json.NewEncoder(w).Encode(ce)
+		return
 	}
 	w.WriteHeader(http.StatusInternalServerError)
 	log.Printf("ERROR: %v", e.Error())
