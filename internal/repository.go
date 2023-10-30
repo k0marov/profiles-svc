@@ -21,7 +21,7 @@ func NewMongoProfileRepository(cfg MongoConfig) (repo *MongoProfileRepository, c
 	log.Printf("connected to mongodb at %q", cfg.URI)
 	close = func() {
 		if err := client.Disconnect(context.Background()); err != nil {
-			log.Fatalf("unable to close mongo db connection: %v", err)
+			log.Fatalf("unable to close mongo db connection: %w", err)
 		}
 	}
 	profilesCol := client.Database("profiles-svc").Collection("profiles")
@@ -36,11 +36,11 @@ func (m *MongoProfileRepository) Get(ID string) (*Profile, error) {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrProfileNotFound
 		}
-		return nil, fmt.Errorf("while finding profile with ID=%q: %v", ID, err)
+		return nil, fmt.Errorf("while finding profile with ID=%q: %w", ID, err)
 	}
 	var profile Profile
 	if err := result.Decode(&profile); err != nil {
-		return nil, fmt.Errorf("unable to decode profile from db: %v", err)
+		return nil, fmt.Errorf("unable to decode profile from db: %w", err)
 	}
 	return &profile, nil
 }
@@ -48,7 +48,7 @@ func (m *MongoProfileRepository) Get(ID string) (*Profile, error) {
 func (m *MongoProfileRepository) Create(profile *Profile) error {
 	_, err := m.col.InsertOne(context.TODO(), profile)
 	if err != nil {
-		return fmt.Errorf("while inserting profile into db: %v", err)
+		return fmt.Errorf("while inserting profile into db: %w", err)
 	}
 	return nil
 }
@@ -59,7 +59,7 @@ func (m *MongoProfileRepository) Replace(ID string, profile *Profile) error {
 		if err == mongo.ErrNoDocuments {
 			return ErrProfileNotFound
 		}
-		return fmt.Errorf("while replacing profile in db: %v", err)
+		return fmt.Errorf("while replacing profile in db: %w", err)
 	}
 	return nil
 }

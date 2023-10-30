@@ -22,7 +22,7 @@ func ReadConfigFromEnv() AppConfig {
 	var cfg AppConfig
 	err := envconfig.Process("profiles", &cfg)
 	if err != nil {
-		log.Panicf("while parsing app config from env: %v", err)
+		log.Panicf("while parsing app config from env: %w", err)
 	}
 	return cfg
 }

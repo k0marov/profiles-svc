@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,6 +18,9 @@ func (ce *ClientError) Error() string {
 }
 
 func WriteErrorResponse(w http.ResponseWriter, e error) {
+	if unwrapped := errors.Unwrap(e); unwrapped != nil {
+		e = unwrapped
+	}
 	if ce, ok := e.(*ClientError); ok {
 		w.WriteHeader(ce.HTTPCode)
 		json.NewEncoder(w).Encode(ce)

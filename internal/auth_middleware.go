@@ -62,12 +62,12 @@ func parseJWT(token string) (*UserClaims, error) {
 	}
 	byteClaims, err := base64.RawURLEncoding.DecodeString(parts[1])
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode payload part from base64: %v", err)
+		return nil, fmt.Errorf("unable to decode payload part from base64: %w", err)
 	}
 
 	var claims jwtClaims
 	if err := json.Unmarshal(byteClaims, &claims); err != nil {
-		return nil, fmt.Errorf("unable to unmarshal claims: %v", err)
+		return nil, fmt.Errorf("unable to unmarshal claims: %w", err)
 	}
 
 	return &UserClaims{
