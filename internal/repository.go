@@ -53,29 +53,13 @@ func (m *MongoProfileRepository) Create(profile *Profile) error {
 	return nil
 }
 
-func (m *MongoProfileRepository) Update(ID string, upd *ProfileUpdatable) (*Profile, error) {
-	profile, err := m.Get(ID)
-	if err != nil {
-		return nil, fmt.Errorf("while getting profile profile: %v", err)
-	}
-	profile.ProfileUpdatable = updateProfile(profile.ProfileUpdatable, *upd)
-
+func (m *MongoProfileRepository) Replace(ID string, profile *Profile) (*Profile, error) {
 	result := m.col.FindOneAndReplace(context.TODO(), bson.D{{"_id", ID}}, profile)
 	if err := result.Err(); err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrProfileNotFound
 		}
-		return nil, fmt.Errorf("while updating profile in db: %v", err)
+		return nil, fmt.Errorf("while replacing profile in db: %v", err)
 	}
 	return profile, nil
-}
-
-func updateProfile(current, upd ProfileUpdatable) ProfileUpdatable {
-	if upd.Name != nil {
-		current.Name = upd.Name
-	}
-	if upd.Age != nil {
-		current.Age = upd.Age
-	}
-	return current
 }

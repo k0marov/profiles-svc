@@ -15,7 +15,7 @@ var ErrProfileNotFound = &ClientError{
 type ProfileRepo interface {
 	Get(ID string) (*Profile, error)
 	Create(profile *Profile) error
-	Update(ID string, profile *ProfileUpdatable) (*Profile, error)
+	Replace(ID string, profile *Profile) error
 }
 
 type ProfileService struct {
@@ -54,9 +54,26 @@ func (p *ProfileService) createFirst(user *UserClaims) (*Profile, error) {
 }
 
 func (p *ProfileService) Update(ctx context.Context, upd *ProfileUpdatable) (*Profile, error) {
-	profile, err := p.repo.Update(GetCaller(ctx).ID, upd)
+	caller := GetCaller(ctx)
+	profile, err := p.repo.Get(caller.ID)
 	if err != nil {
-		return nil, fmt.Errorf("while updating user profile in repo: %v", err)
+		return nil, fmt.Errorf("while getting profile: %v", err)
+	}
+	profile.ProfileUpdatable = updateProfile(profile.ProfileUpdatable, *upd)
+
+	err = p.repo.Replace(GetCaller(ctx).ID, profile)
+	if err != nil {
+		return nil, fmt.Errorf("while replacing user profile in repo: %v", err)
 	}
 	return profile, nil
+}
+
+func updateProfile(current, upd ProfileUpdatable) ProfileUpdatable {
+	if upd.Name != nil {
+		current.Name = upd.Name
+	}
+	if upd.Age != nil {
+		current.Age = upd.Age
+	}
+	return current
 }
