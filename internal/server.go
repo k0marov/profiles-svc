@@ -17,14 +17,14 @@ type Server struct {
 	r   chi.Router
 }
 
-func NewServer(cfg AuthConfig, svc WebProfileService) http.Handler {
+func NewServer(svc WebProfileService) http.Handler {
 	srv := &Server{svc, chi.NewRouter()}
-	srv.defineEndpoints(cfg)
+	srv.defineEndpoints()
 	return srv
 }
 
-func (s *Server) defineEndpoints(authCfg AuthConfig) {
-	s.r.Use(NewAuthMiddleware(authCfg).Middleware())
+func (s *Server) defineEndpoints() {
+	s.r.Use(AuthMiddleware())
 	s.r.Route("/api/v1/profiles", func(r chi.Router) {
 		r.Get("/me", s.GetMyProfile)
 		r.Patch("/me", s.UpdateProfile)

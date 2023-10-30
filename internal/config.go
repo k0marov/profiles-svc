@@ -5,10 +5,6 @@ import (
 	"log"
 )
 
-type AuthConfig struct {
-	LoginURL string `default:"/.ory/self-service/login/browser"`
-}
-
 type HTTPServerConfig struct {
 	Host string `default:"127.0.0.1:8001"`
 }
@@ -18,7 +14,6 @@ type MongoConfig struct {
 }
 
 type AppConfig struct {
-	Auth       AuthConfig
 	HTTPServer HTTPServerConfig
 	Mongo      MongoConfig
 }

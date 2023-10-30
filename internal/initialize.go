@@ -9,6 +9,6 @@ func InitializeAndStart(cfg AppConfig) {
 	repo, closeRepo := NewMongoProfileRepository(cfg.Mongo)
 	defer closeRepo()
 	svc := NewProfileService(repo)
-	srv := NewServer(cfg.Auth, svc)
+	srv := NewServer(svc)
 	log.Print(http.ListenAndServe(cfg.HTTPServer.Host, srv))
 }

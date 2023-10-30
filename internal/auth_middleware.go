@@ -24,25 +24,15 @@ func GetCaller(ctx context.Context) *UserClaims {
 	return ctx.Value("req.session").(*UserClaims)
 }
 
-type AuthMiddleware struct {
-	cfg AuthConfig
-}
-
-func NewAuthMiddleware(cfg AuthConfig) *AuthMiddleware {
-	return &AuthMiddleware{
-		cfg,
-	}
-}
-
-func (mw *AuthMiddleware) Middleware() func(http.Handler) http.Handler {
+func AuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-			claims, err := mw.parseJWT(token)
+			claims, err := parseJWT(token)
 			if err != nil {
-				// TODO: replace with just 401
 				log.Printf("rejected token %s: %v", token, err)
-				http.Redirect(w, r, mw.cfg.LoginURL, http.StatusSeeOther)
+				// TODO: replace with just 401
+				http.Redirect(w, r, "/.ory/self-service/login/browser", http.StatusSeeOther)
 				return
 			}
 
@@ -65,7 +55,7 @@ type jwtClaims struct {
 // this microservice is meant to be used behind an auth gateway (like ory proxy)
 // so all jwts are assumed to be verified already.
 // JWT is decoded from base64 and parsed here manually to highlight that absolutely no signature verification is done.
-func (mw *AuthMiddleware) parseJWT(token string) (*UserClaims, error) {
+func parseJWT(token string) (*UserClaims, error) {
 	parts := strings.SplitN(token, ".", 3)
 	if len(parts) != 3 {
 		return nil, errors.New("unable to split jwt into three parts")
