@@ -53,13 +53,13 @@ func (m *MongoProfileRepository) Create(profile *Profile) error {
 	return nil
 }
 
-func (m *MongoProfileRepository) Replace(ID string, profile *Profile) (*Profile, error) {
+func (m *MongoProfileRepository) Replace(ID string, profile *Profile) error {
 	result := m.col.FindOneAndReplace(context.TODO(), bson.D{{"_id", ID}}, profile)
 	if err := result.Err(); err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, ErrProfileNotFound
+			return ErrProfileNotFound
 		}
-		return nil, fmt.Errorf("while replacing profile in db: %v", err)
+		return fmt.Errorf("while replacing profile in db: %v", err)
 	}
-	return profile, nil
+	return nil
 }
