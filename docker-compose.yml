@@ -13,34 +13,16 @@ services:
     environment:
       PROFILES_MONGO_URI: mongodb://mongo:27017
     ports:
-      - 8080:8080
+      - "8080:8080"
   mongo:
     image: mongo
     container_name: mongo
     hostname: mongo
     networks:
       - mynet
-    ports:
-      - 27017:27017
     volumes:
       - ./mongo-data:/data/db
 
 networks:
   mynet:
     driver: bridge
-#
-#
-#
-#services:
-#  app:
-#    image: profiles-svc:local
-#    container_name: profiles
-#    depends_on:
-#      - mongodb
-##    networks:
-##      - ps
-#  mongodb:
-#    image: mongo
-#    container_name: mongodb
-#    volumes:
-#      - ./mongo-data:/data/db
