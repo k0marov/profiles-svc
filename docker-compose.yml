@@ -10,10 +10,11 @@ services:
     hostname: profiles-svc
     networks:
       - mynet
+    env_file: .env
     environment:
       PROFILES_MONGO_URI: mongodb://mongo:27017
     ports:
-      - "8080:8080"
+      - "${PROFILES_SVC_PORT:-8080}:8080"
   mongo:
     image: mongo
     container_name: mongo
