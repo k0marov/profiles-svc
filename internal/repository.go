@@ -18,6 +18,10 @@ func NewMongoProfileRepository(cfg MongoConfig) (repo *MongoProfileRepository, c
 	if err != nil {
 		log.Fatalf("unable to connect to mongo db: %v", err)
 	}
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Fatalf("unable to ping mongo: %v", err)
+	}
 	log.Printf("connected to mongodb at %q", cfg.URI)
 	close = func() {
 		if err := client.Disconnect(context.Background()); err != nil {
