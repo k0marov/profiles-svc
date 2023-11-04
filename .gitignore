@@ -1,4 +1,4 @@
 .idea
 .vscode
 /mongo-data/
-.idea
+/.env

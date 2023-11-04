@@ -52,6 +52,14 @@ func (p *ProfileService) createFirst(user *UserClaims) (*Profile, error) {
 	return profile, nil
 }
 
+func (p *ProfileService) Get(userID string) (*Profile, error) {
+	profile, err := p.repo.Get(userID)
+	if err != nil {
+		return nil, fmt.Errorf("while getting profile %q from repo: %v", userID, err)
+	}
+	return profile, nil
+}
+
 func (p *ProfileService) Update(caller *UserClaims, upd *ProfileUpdatable) (*Profile, error) {
 	profile, err := p.repo.Get(caller.ID)
 	if err != nil {
