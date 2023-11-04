@@ -1,0 +1,100 @@
+basePath: /api/v1
+definitions:
+  internal.ClientError:
+    properties:
+      message:
+        type: string
+    type: object
+  internal.Profile:
+    properties:
+      age:
+        type: integer
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  internal.ProfileUpdatable:
+    properties:
+      age:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: sam@skomarov.com
+    name: Sam Komarov
+    url: github.com/k0marov
+  description: A microservice for handling user profiles
+  title: profiles-svc
+  version: "1.0"
+paths:
+  /profiles/{id}:
+    get:
+      description: Get profile by user id. Returns 404 if profile does not exist.
+      parameters:
+      - description: ID of the user for which you want to get its profile.
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal.Profile'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal.ClientError'
+      summary: Get profile by user id.
+      tags:
+      - profiles
+  /profiles/me:
+    get:
+      description: |-
+        Get profile of the caller if it has been created.
+        If profile was not yet created, create it.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal.Profile'
+            type: array
+      summary: Get caller's profile
+      tags:
+      - profiles
+    patch:
+      consumes:
+      - application/json
+      description: Update profile of the caller, only updating the specified fields.
+      parameters:
+      - description: fields to update
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/internal.ProfileUpdatable'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal.Profile'
+      summary: Update profile of the caller.
+      tags:
+      - profiles
+schemes:
+- https
+- http
+swagger: "2.0"
