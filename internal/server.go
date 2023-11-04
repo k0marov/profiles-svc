@@ -8,6 +8,7 @@ import "github.com/go-chi/chi/v5"
 
 type WebProfileService interface {
 	GetOrCreate(caller *UserClaims) (*Profile, error)
+	Get(userID string) (*Profile, error)
 	Update(caller *UserClaims, upd *ProfileUpdatable) (*Profile, error)
 }
 
@@ -26,12 +27,22 @@ func (s *Server) defineEndpoints() {
 	s.r.Use(AuthMiddleware())
 	s.r.Route("/api/v1/profiles", func(r chi.Router) {
 		r.Get("/me", s.GetMyProfile)
+		r.Get("/{id}", s.GetOtherProfile)
 		r.Patch("/me", s.UpdateProfile)
 	})
 }
 
 func (s *Server) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	profile, err := s.svc.GetOrCreate(GetCaller(r.Context()))
+	if err != nil {
+		WriteErrorResponse(w, err)
+		return
+	}
+	json.NewEncoder(w).Encode(profile)
+}
+
+func (s *Server) GetOtherProfile(w http.ResponseWriter, r *http.Request) {
+	profile, err := s.svc.Get(chi.URLParam(r, "id"))
 	if err != nil {
 		WriteErrorResponse(w, err)
 		return
