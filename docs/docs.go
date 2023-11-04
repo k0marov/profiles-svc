@@ -52,7 +52,7 @@ const docTemplate = `{
                 "tags": [
                     "profiles"
                 ],
-                "summary": "Update profile of the caller.",
+                "summary": "Update profile of the caller",
                 "parameters": [
                     {
                         "description": "fields to update",
@@ -83,7 +83,7 @@ const docTemplate = `{
                 "tags": [
                     "profiles"
                 ],
-                "summary": "Get profile by user id.",
+                "summary": "Get profile by user id",
                 "parameters": [
                     {
                         "type": "string",

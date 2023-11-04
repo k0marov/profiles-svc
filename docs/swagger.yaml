@@ -53,7 +53,7 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/internal.ClientError'
-      summary: Get profile by user id.
+      summary: Get profile by user id
       tags:
       - profiles
   /profiles/me:
@@ -91,7 +91,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/internal.Profile'
-      summary: Update profile of the caller.
+      summary: Update profile of the caller
       tags:
       - profiles
 schemes:
