@@ -19,7 +19,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/profiles/me": {
+        "/api/v1/profiles/me": {
             "get": {
                 "description": "Get profile of the caller if it has been created.\nIf profile was not yet created, create it.",
                 "produces": [
@@ -74,7 +74,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/profiles/{id}": {
+        "/api/v1/profiles/{id}": {
             "get": {
                 "description": "Get profile by user id. Returns 404 if profile does not exist.",
                 "produces": [
@@ -154,7 +154,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "",
 	Schemes:          []string{"https", "http"},
 	Title:            "profiles-svc",
 	Description:      "A microservice for handling user profiles",

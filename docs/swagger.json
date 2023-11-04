@@ -15,9 +15,8 @@
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/api/v1",
     "paths": {
-        "/profiles/me": {
+        "/api/v1/profiles/me": {
             "get": {
                 "description": "Get profile of the caller if it has been created.\nIf profile was not yet created, create it.",
                 "produces": [
@@ -72,7 +71,7 @@
                 }
             }
         },
-        "/profiles/{id}": {
+        "/api/v1/profiles/{id}": {
             "get": {
                 "description": "Get profile by user id. Returns 404 if profile does not exist.",
                 "produces": [

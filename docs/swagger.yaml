@@ -1,4 +1,3 @@
-basePath: /api/v1
 definitions:
   internal.ClientError:
     properties:
@@ -33,7 +32,7 @@ info:
   title: profiles-svc
   version: "1.0"
 paths:
-  /profiles/{id}:
+  /api/v1/profiles/{id}:
     get:
       description: Get profile by user id. Returns 404 if profile does not exist.
       parameters:
@@ -56,7 +55,7 @@ paths:
       summary: Get profile by user id
       tags:
       - profiles
-  /profiles/me:
+  /api/v1/profiles/me:
     get:
       description: |-
         Get profile of the caller if it has been created.

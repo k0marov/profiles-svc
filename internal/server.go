@@ -34,7 +34,6 @@ func NewServer(svc WebProfileService) http.Handler {
 //	@contact.email	sam@skomarov.com
 
 // @host		localhost:8080
-// @BasePath	/api/v1
 // @schemes     https http
 func (s *Server) defineEndpoints() {
 	s.r.Get("/swagger/*", httpSwagger.WrapHandler)
@@ -54,7 +53,7 @@ func (s *Server) defineEndpoints() {
 //		@Tags			profiles
 //		@Produce		json
 //		@Success		200	{object}	[]Profile
-//		@Router			/profiles/me [get]
+//		@Router			/api/v1/profiles/me [get]
 func (s *Server) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 	profile, err := s.svc.GetOrCreate(GetCaller(r.Context()))
 	if err != nil {
@@ -73,7 +72,7 @@ func (s *Server) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 //		@Success		200	{object}	Profile
 //	    @Failure        404 {object}    ClientError
 //		@Param			id	path		string	true	"ID of the user for which you want to get its profile."
-//		@Router			/profiles/{id} [get]
+//		@Router			/api/v1/profiles/{id} [get]
 func (s *Server) GetOtherProfile(w http.ResponseWriter, r *http.Request) {
 	profile, err := s.svc.Get(chi.URLParam(r, "id"))
 	if err != nil {
@@ -92,7 +91,7 @@ func (s *Server) GetOtherProfile(w http.ResponseWriter, r *http.Request) {
 //	@Param			account	body		ProfileUpdatable	true	"fields to update"
 //	@Produce		json
 //	@Success		200	{object}	Profile
-//	@Router			/profiles/me [patch]
+//	@Router			/api/v1/profiles/me [patch]
 func (s *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	var upd ProfileUpdatable
 	if err := json.NewDecoder(r.Body).Decode(&upd); err != nil {
