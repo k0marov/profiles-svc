@@ -66,7 +66,7 @@ func (s *Server) GetMyProfile(w http.ResponseWriter, r *http.Request) {
 
 // GetOtherProfile godoc
 //
-//		@Summary		Get profile by user id.
+//		@Summary		Get profile by user id
 //		@Description	Get profile by user id. Returns 404 if profile does not exist.
 //		@Tags			profiles
 //		@Produce		json
@@ -85,7 +85,7 @@ func (s *Server) GetOtherProfile(w http.ResponseWriter, r *http.Request) {
 
 // UpdateProfile godoc
 //
-//	@Summary		Update profile of the caller.
+//	@Summary		Update profile of the caller
 //	@Description	Update profile of the caller, only updating the specified fields.
 //	@Tags			profiles
 //	@Accept 		json
